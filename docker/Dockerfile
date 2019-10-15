@@ -84,4 +84,10 @@ RUN apt-get -y install \
     openssh-server \
     rsync=3.1.2-2.1ubuntu1
 
-CMD tail -f /dev/null
+USER ${RUN_USER}
+COPY entrypoint.sh ~/
+USER root
+CMD ["~/entrypoint.sh", "-fg"]
+ENTRYPOINT ["/bin/bash", "--"]
+
+EXPOSE 22
