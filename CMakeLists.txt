@@ -5,9 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_library(LEVELDB_PATH NAMES leveldb PATHS /usr)
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/wiredis/CMakeLists.txt)
+find_package(Boost REQUIRED COMPONENTS system asio)
 
 include_directories(
     ${BOOST_INCLUDE_DIR}
@@ -20,6 +18,8 @@ file(GLOB ALLSRC
     "*.cpp"
     "ledger/*.h"
     "ledger/*.cpp"
+    "wiredis/include/wiredis/*.h"
+    "wiredis/include/wiredis/proto/*.h"
 )
 
 add_executable(DBBench ${ALLSRC})

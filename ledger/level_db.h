@@ -12,12 +12,12 @@
 
 namespace avis {
 
-class RedisDB : public StateDB {
+class LevelDB : public StateDB {
 
     friend class DBProvider;
     
 public:
-    ~RedisDB();
+    ~LevelDB() override;
 
     bool open(const std::string& dbname) override;
     void close() override;
@@ -37,7 +37,7 @@ private:
         leveldb::WriteBatch batch;
     };
 
-    RedisDB() = default;
+    LevelDB() = default;
 
     uint32_t shard(uint32_t hash, int shardBits);
     uint32_t hashSlice(leveldb::Slice s);

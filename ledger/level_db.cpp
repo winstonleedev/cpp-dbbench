@@ -6,12 +6,12 @@
 
 namespace avis {
 
-RedisDB::~RedisDB() {
+LevelDB::~LevelDB() {
 
     close();
 }
 
-bool RedisDB::open(const std::string& dbname) {
+bool LevelDB::open(const std::string& dbname) {
 
     for (int idx = 0; idx < (1 << _shardBits); idx++) {
         leveldb::DB* ldb;
@@ -44,7 +44,7 @@ bool RedisDB::open(const std::string& dbname) {
     return true;
 }
 
-void RedisDB::close() {
+void LevelDB::close() {
 
     for (auto iter = _dbs.begin(); iter != _dbs.end(); iter++) {
         if (iter->db != nullptr) {
@@ -57,7 +57,7 @@ void RedisDB::close() {
     }
 }
 
-bool RedisDB::opened() {
+bool LevelDB::opened() {
 
     for (auto iter = _dbs.begin(); iter != _dbs.end(); iter++) {
         if (!iter->status.ok()) {
@@ -68,7 +68,7 @@ bool RedisDB::opened() {
     return true;
 }
 
-bool RedisDB::get(const std::string& key, std::string* value) {
+bool LevelDB::get(const std::string& key, std::string* value) {
 
     int idx = shard(hashSlice(key), _shardBits);
     _dbs[idx].status = _dbs[idx].db->Get(leveldb::ReadOptions(), key, value);
@@ -80,7 +80,7 @@ bool RedisDB::get(const std::string& key, std::string* value) {
     return true;
 }
 
-bool RedisDB::put(const std::string& key, const std::string& value) {
+bool LevelDB::put(const std::string& key, const std::string& value) {
 
     if (key.empty()) {
         return false;
@@ -96,7 +96,7 @@ bool RedisDB::put(const std::string& key, const std::string& value) {
     return true;
 }
 
-bool RedisDB::putBatch(const std::string& key, const std::string& value) {
+bool LevelDB::putBatch(const std::string& key, const std::string& value) {
 
     if (key.empty()) {
         return false;
@@ -107,7 +107,7 @@ bool RedisDB::putBatch(const std::string& key, const std::string& value) {
     return true;
 }
 
-bool RedisDB::del(const std::string& key) {
+bool LevelDB::del(const std::string& key) {
 
     if (key.empty()) {
         return false;
@@ -123,7 +123,7 @@ bool RedisDB::del(const std::string& key) {
     return true;
 }
 
-bool RedisDB::delBatch(const std::string& key) {
+bool LevelDB::delBatch(const std::string& key) {
 
     if (key.empty()) {
         return false;
@@ -134,7 +134,7 @@ bool RedisDB::delBatch(const std::string& key) {
     return true;
 }
 
-bool RedisDB::applyBatch() {
+bool LevelDB::applyBatch() {
 
     for (auto iter = _dbs.begin(); iter != _dbs.end(); iter++) {
         if (!(iter->db->Write(leveldb::WriteOptions(), &iter->batch)).ok()) {
@@ -149,12 +149,12 @@ bool RedisDB::applyBatch() {
     return true;
 }
 
-uint32_t RedisDB::shard(uint32_t hash, int shardBits) {
+uint32_t LevelDB::shard(uint32_t hash, int shardBits) {
 
     return hash % (1 << shardBits);
 }
 
-uint32_t RedisDB::hashSlice(leveldb::Slice s) {
+uint32_t LevelDB::hashSlice(leveldb::Slice s) {
 
     return hash(s.data(), s.size(), 0);
 }
@@ -163,7 +163,7 @@ uint32_t RedisDB::hashSlice(leveldb::Slice s) {
 #define FALLTHROUGH_INTENDED do { } while (0)
 #endif
 
-uint32_t RedisDB::hash(const char* data, size_t n, uint32_t seed) {
+uint32_t LevelDB::hash(const char* data, size_t n, uint32_t seed) {
 
     // similar to murmur hash.
     const uint32_t m = 0xc6a4a793;
@@ -200,7 +200,7 @@ uint32_t RedisDB::hash(const char* data, size_t n, uint32_t seed) {
     return h;
 }
 
-uint32_t RedisDB::decodeFixed32(const char* ptr) {
+uint32_t LevelDB::decodeFixed32(const char* ptr) {
 
     return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0]))) |
         (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 8) |

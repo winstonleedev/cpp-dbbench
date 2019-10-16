@@ -29,16 +29,16 @@ RUN apt-get install -y \
     python-dev \
     wget
 
-WORKDIR ~
+WORKDIR /src
 ## build boost 1.65.0
 RUN wget http://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.gz \
     && tar xzvf boost_1_65_0.tar.gz \
     && cd boost_1_65_0 \
     && ./bootstrap.sh --prefix=/usr/  \
     && ./b2 \
-    && ./b2 install
+    && ./b2 install --with-system --with-asio
 
-WORKDIR ~
+WORKDIR /src
 ## build gflags
 RUN wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz \
     && tar xzf v2.2.2.tar.gz \
@@ -47,7 +47,7 @@ RUN wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz \
     && make -j \
     && make install
 
-WORKDIR ~
+WORKDIR /src
 ## build gtest
 RUN git clone -b release-1.8.1 https://github.com/google/googletest \
     && cd googletest && mkdir build && cd build \
@@ -55,7 +55,7 @@ RUN git clone -b release-1.8.1 https://github.com/google/googletest \
     && make -j \
     && make install
 
-WORKDIR ~
+WORKDIR /src
 ## build glog
 RUN git clone https://github.com/google/glog.git \
     && cd glog \
@@ -63,14 +63,14 @@ RUN git clone https://github.com/google/glog.git \
     && cmake --build build -- -j \
     && cmake --build build --target install
 
-WORKDIR ~
-RUN git clone -b 1.22 https://github.com/google/leveldb \
+WORKDIR /src
+RUN git clone -b 1.22 https://github.com/google/. \
     && cd leveldb \
     && mkdir -p build && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -- -j \
     && make install
 
-FROM base AS release
+# FROM base AS release
 
 ENV RUN_USER medium
 ENV RUN_GROUP medium
@@ -84,8 +84,8 @@ RUN apt-get -y install \
     openssh-server \
     rsync=3.1.2-2.1ubuntu1
 
-COPY --from=build /usr/local/ /usr/local/
-COPY --from=build /usr/include/ /usr/include/
+# COPY --from=build /usr/local/ /usr/local/
+# COPY --from=build /usr/include/ /usr/include/
 
 USER ${RUN_USER}
 COPY entrypoint.sh ~/
