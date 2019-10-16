@@ -84,6 +84,9 @@ RUN apt-get -y install \
     openssh-server \
     rsync=3.1.2-2.1ubuntu1
 
+COPY --from=build /usr/local/ /usr/local/
+COPY --from=build /usr/include/ /usr/include/
+
 USER ${RUN_USER}
 COPY entrypoint.sh ~/
 USER root

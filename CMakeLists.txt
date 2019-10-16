@@ -3,9 +3,21 @@ project(DBBench)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_library(LEVELDB_PATH NAMES leveldb PATHS /usr)
+find_package(Threads REQUIRED)
+
+include_directories(${CMAKE_SOURCE_DIR})
+
 file(GLOB ALLSRC
     "*.h"
     "*.cpp"
+    "ledger/*.h"
+    "ledger/*.cpp"
 )
 
 add_executable(DBBench ${ALLSRC})
+target_link_libraries(DBBench
+PUBLIC
+    ${LEVELDB_PATH}
+    Threads::Threads
+)

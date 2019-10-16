@@ -3,10 +3,11 @@
 
 #include "ledger/db_provider.h"
 
-#define DEFAULT_TXCOUNT 5000000
+#define DEFAULT_TXCOUNT 5000
+#define _ENV(x, y)          (std::getenv(x) ? std::getenv(x) : y)
+#define PATH_STATEDB        _ENV("PATH_STATEDB", "/home/medium/medium/data/states/")
 
 using namespace avis;
-using namespace avis::define;
 
 int main(int argc, const char** argv) {
 
@@ -34,6 +35,7 @@ int main(int argc, const char** argv) {
     }
 
     db->put("total-common-token", std::to_string(500 * 2 * ntx));
+    std::cout << "total-common-token " << std::to_string(500 * 2 * ntx) << std::endl;
     std::cout << "state db initialization end" << std::endl;
     return 0;
 }
