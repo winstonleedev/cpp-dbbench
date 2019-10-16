@@ -1,5 +1,6 @@
 docker stop dbbench
 docker rm dbbench
+docker pull thanhphu/dbbench
 docker build -t dbbench .
 docker tag dbbench thanhphu/dbbench
 docker push thanhphu/dbbench

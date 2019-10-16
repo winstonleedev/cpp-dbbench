@@ -27,7 +27,7 @@ bool DBProvider::create(const std::string& dbname) {
         system(cmd.c_str());
     }
 
-    _db = new LevelDB();
+    _db = new RedisDB();
     if (!_db->open(dbname)) {
         return false;
     }

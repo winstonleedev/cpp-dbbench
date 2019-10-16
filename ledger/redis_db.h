@@ -3,10 +3,8 @@
 #include <string>
 #include <vector>
 
-#include <leveldb/db.h>
-#include <leveldb/slice.h>
-#include <leveldb/write_batch.h>
-#include <leveldb/options.h>
+#include <wiredis/redis-connection.h>
+#include <wiredis/tcp-connection.h>
 
 #include <ledger/state_db.h>
 
@@ -31,16 +29,16 @@ public:
 
 private:
     struct DB {
-        leveldb::DB* db;
-        leveldb::Options    opts;
-        leveldb::Status     status;
-        leveldb::WriteBatch batch;
+        RedisDB::DB* db;
+        RedisDB::Options    opts;
+        RedisDB::Status     status;
+        RedisDB::WriteBatch batch;
     };
 
     RedisDB() = default;
 
     uint32_t shard(uint32_t hash, int shardBits);
-    uint32_t hashSlice(leveldb::Slice s);
+    uint32_t hashSlice(RedisDB::Slice s);
     uint32_t hash(const char* data, size_t n, uint32_t seed);
     uint32_t decodeFixed32(const char* ptr);
 

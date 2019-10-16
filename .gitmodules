@@ -1,0 +1,3 @@
+[submodule "wiredis"]
+	path = wiredis
+	url = git@github.com:nokia/wiredis.git

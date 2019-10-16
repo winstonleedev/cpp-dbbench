@@ -1,8 +1,6 @@
-#include <ledger/level_db.h>
+#include <ledger/redis_db.h>
 
 #include <iostream>
-#include <leveldb/cache.h>
-#include <leveldb/filter_policy.h>
 
 namespace avis {
 
@@ -14,23 +12,23 @@ RedisDB::~RedisDB() {
 bool RedisDB::open(const std::string& dbname) {
 
     for (int idx = 0; idx < (1 << _shardBits); idx++) {
-        leveldb::DB* ldb;
-        leveldb::Options opts;
-        leveldb::Status  status;
+        redisDB::DB* ldb;
+        redisDB::Options opts;
+        redisDB::Status  status;
 
         opts.create_if_missing = true;
-        opts.block_cache = leveldb::NewLRUCache((1 + 9 + 8 + 1 + 4) * 800 * 10000 / (1 << _shardBits) * 2);  // (1+9+8+1+4) * 800 * 10000 / 32 bytes * 2 = 36.8mb * 2
-        //opts.block_cache       = leveldb::NewLRUCache(1024 * 1024 * 1024);
-        //opts.filter_policy     = leveldb::NewBloomFilterPolicy(10);
+        opts.block_cache = redisDB::NewLRUCache((1 + 9 + 8 + 1 + 4) * 800 * 10000 / (1 << _shardBits) * 2);  // (1+9+8+1+4) * 800 * 10000 / 32 bytes * 2 = 36.8mb * 2
+        //opts.block_cache       = redisDB::NewLRUCache(1024 * 1024 * 1024);
+        //opts.filter_policy     = redisDB::NewBloomFilterPolicy(10);
 
         DB* db = new DB();
         db->db = ldb;
         db->opts = opts;
-        db->status = leveldb::Status();
-        db->batch = leveldb::WriteBatch();
+        db->status = redisDB::Status();
+        db->batch = redisDB::WriteBatch();
 
         std::string path = dbname + "/" + std::to_string(idx);
-        db->status = leveldb::DB::Open(db->opts, path, &db->db);
+        db->status = redisDB::DB::Open(db->opts, path, &db->db);
         if (!db->status.ok()) {
             #if __LOG_ERROR__
             std::cerr << "level db open error: " << status.ToString() << std::endl;
@@ -71,7 +69,7 @@ bool RedisDB::opened() {
 bool RedisDB::get(const std::string& key, std::string* value) {
 
     int idx = shard(hashSlice(key), _shardBits);
-    _dbs[idx].status = _dbs[idx].db->Get(leveldb::ReadOptions(), key, value);
+    _dbs[idx].status = _dbs[idx].db->Get(redisDB::ReadOptions(), key, value);
 
     if (!_dbs[idx].status.ok()) {
         return false;
@@ -87,7 +85,7 @@ bool RedisDB::put(const std::string& key, const std::string& value) {
     }
 
     int idx = shard(hashSlice(key), _shardBits);
-    _dbs[idx].status = _dbs[idx].db->Put(leveldb::WriteOptions(), key, value);
+    _dbs[idx].status = _dbs[idx].db->Put(redisDB::WriteOptions(), key, value);
 
     if (!_dbs[idx].status.ok()) {
         return false;
@@ -114,7 +112,7 @@ bool RedisDB::del(const std::string& key) {
     }
 
     int idx = shard(hashSlice(key), _shardBits);
-    _dbs[idx].status = _dbs[idx].db->Delete(leveldb::WriteOptions(), key);
+    _dbs[idx].status = _dbs[idx].db->Delete(redisDB::WriteOptions(), key);
 
     if (!_dbs[idx].status.ok()) {
         return false;
@@ -137,7 +135,7 @@ bool RedisDB::delBatch(const std::string& key) {
 bool RedisDB::applyBatch() {
 
     for (auto iter = _dbs.begin(); iter != _dbs.end(); iter++) {
-        if (!(iter->db->Write(leveldb::WriteOptions(), &iter->batch)).ok()) {
+        if (!(iter->db->Write(redisDB::WriteOptions(), &iter->batch)).ok()) {
             return false;
         }
     }
@@ -154,7 +152,7 @@ uint32_t RedisDB::shard(uint32_t hash, int shardBits) {
     return hash % (1 << shardBits);
 }
 
-uint32_t RedisDB::hashSlice(leveldb::Slice s) {
+uint32_t RedisDB::hashSlice(redisDB::Slice s) {
 
     return hash(s.data(), s.size(), 0);
 }
