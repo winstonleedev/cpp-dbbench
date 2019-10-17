@@ -15,7 +15,7 @@ RUN apt-get update \
     python3
 
 
-FROM base AS build
+# FROM base AS build
 
 RUN apt-get install -y \
     autoconf \
@@ -34,9 +34,9 @@ WORKDIR /src
 RUN wget http://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.gz \
     && tar xzvf boost_1_65_0.tar.gz \
     && cd boost_1_65_0 \
-    && ./bootstrap.sh --prefix=/usr/  \
-    && ./b2 \
-    && ./b2 install --with-system --with-asio
+    && ./bootstrap.sh --prefix=/usr/ \
+    && ./b2 --with-system \
+    && ./b2 install
 
 WORKDIR /src
 ## build gflags
@@ -64,7 +64,7 @@ RUN git clone https://github.com/google/glog.git \
     && cmake --build build --target install
 
 WORKDIR /src
-RUN git clone -b 1.22 https://github.com/google/. \
+RUN git clone -b 1.22 https://github.com/google/leveldb \
     && cd leveldb \
     && mkdir -p build && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -- -j \
@@ -88,9 +88,9 @@ RUN apt-get -y install \
 # COPY --from=build /usr/include/ /usr/include/
 
 USER ${RUN_USER}
-COPY entrypoint.sh ~/
+COPY entrypoint.sh /
 USER root
-CMD ["~/entrypoint.sh", "-fg"]
+CMD ["/entrypoint.sh", "-fg"]
 ENTRYPOINT ["/bin/bash", "--"]
 
 EXPOSE 22

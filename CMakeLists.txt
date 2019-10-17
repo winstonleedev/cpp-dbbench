@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_library(LEVELDB_PATH NAMES leveldb PATHS /usr)
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system asio)
+find_package(Boost REQUIRED COMPONENTS system)
 
 include_directories(
     ${BOOST_INCLUDE_DIR}
