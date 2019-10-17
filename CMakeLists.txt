@@ -24,9 +24,12 @@ file(GLOB ALLSRC
 
 add_executable(DBBench ${ALLSRC})
 
+message(STATUS "Boost libs: ${BOOST_LIBRARIES}")
+
 target_link_libraries(DBBench
 PUBLIC
     ${LEVELDB_PATH}
     ${BOOST_LIBRARIES}
+    boost_system
     Threads::Threads
 )
