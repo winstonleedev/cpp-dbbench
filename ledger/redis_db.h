@@ -30,6 +30,9 @@ public:
 private:
     RedisDB() = default;
 
+    ::boost::asio::io_service ios;
+    bool initialized = false;
+
     uint32_t hash(const char* data, size_t n, uint32_t seed);
     uint32_t decodeFixed32(const char* ptr);
 };
