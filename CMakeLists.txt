@@ -3,18 +3,22 @@ project(DBBench)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include(GNUInstallDirs)
+
 find_library(LEVELDB_PATH NAMES leveldb PATHS /usr)
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost COMPONENTS system REQUIRED)
+
+message(STATUS "Boost libs: ${Boost_LIBRARIES}")
+message(STATUS "Boost dirs: ${Boost_INCLUDE_DIR}")
 
 include_directories(
-    ${BOOST_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/wiredis/include
 )
 
 file(GLOB ALLSRC
-    "*.h"
     "*.cpp"
     "ledger/*.h"
     "ledger/*.cpp"
@@ -24,12 +28,10 @@ file(GLOB ALLSRC
 
 add_executable(DBBench ${ALLSRC})
 
-message(STATUS "Boost libs: ${BOOST_LIBRARIES}")
-
 target_link_libraries(DBBench
 PUBLIC
+    ${LD_LIBRARY_PATH}
     ${LEVELDB_PATH}
-    ${BOOST_LIBRARIES}
-    boost_system
+    ${Boost_LIBRARIES}
     Threads::Threads
 )

@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/asio.hpp>
+
 #include <wiredis/redis-connection.h>
 #include <wiredis/tcp-connection.h>
 
@@ -31,7 +33,8 @@ private:
     RedisDB() = default;
 
     ::boost::asio::io_service ios;
-    bool initialized = false;
+    ::nokia::net::redis_connection con = ::nokia::net::redis_connection(ios);
+    bool isConnectionOpen = false;
 
     uint32_t hash(const char* data, size_t n, uint32_t seed);
     uint32_t decodeFixed32(const char* ptr);

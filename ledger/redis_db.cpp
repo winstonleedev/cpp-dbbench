@@ -126,10 +126,11 @@ bool RedisDB::open(const std::string& dbname) {
 }
 
 void RedisDB::close() {
+    isConnectionOpen = false;
 }
 
 bool RedisDB::opened() {
-    return true;
+    return isConnectionOpen;
 }
 
 bool RedisDB::get(const std::string& key, std::string* value) {
