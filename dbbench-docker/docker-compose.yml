@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  redis:
+    image: redis
+    restart: always
+    hostname: redis:latest
+
+  dbbench:
+    image: .
+    restart: always
+    ports:
+      - "2200:22"

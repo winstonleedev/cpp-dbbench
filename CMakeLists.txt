@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(DBBench)
+project(dbbench)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -9,7 +9,7 @@ find_library(LEVELDB_PATH NAMES leveldb PATHS /usr)
 find_library(ROCKSDB_PATH NAMES rocksdb PATHS /usr)
 
 find_package(Threads REQUIRED)
-find_package(Boost COMPONENTS system REQUIRED)
+find_package(Boost COMPONENTS system program_options REQUIRED)
 
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 message(STATUS "Boost dirs: ${Boost_INCLUDE_DIR}")
@@ -29,9 +29,9 @@ file(GLOB ALLSRC
     "wiredis/include/wiredis/proto/*.h"
 )
 
-add_executable(DBBench ${ALLSRC})
+add_executable(${CMAKE_PROJECT_NAME} ${ALLSRC})
 
-target_link_libraries(DBBench
+target_link_libraries(${CMAKE_PROJECT_NAME}
 PUBLIC
     ${LD_LIBRARY_PATH}
     ${LEVELDB_PATH}

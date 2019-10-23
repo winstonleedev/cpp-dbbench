@@ -27,7 +27,8 @@ RUN apt-get install -y \
     libxslt-dev \
     pkg-config \
     python-dev \
-    wget
+    wget \
+    redis
 
 WORKDIR /src
 ## build boost 1.65.0
@@ -35,7 +36,7 @@ RUN wget http://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.g
     && tar xzvf boost_1_65_0.tar.gz \
     && cd boost_1_65_0 \
     && ./bootstrap.sh --prefix=/usr/ \
-    && ./b2 --with-system \
+    && ./b2 --with-system --with-program_options \
     && ./b2 install
 
 WORKDIR /src
