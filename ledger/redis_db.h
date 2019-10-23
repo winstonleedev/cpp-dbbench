@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <thread>
 
 #include <boost/asio.hpp>
 
@@ -35,9 +36,14 @@ private:
     ::boost::asio::io_service ios;
     ::nokia::net::redis_connection con = ::nokia::net::redis_connection(ios);
     bool isConnectionOpen = false;
+    bool shouldRunScheduler = false;
+    std::thread scheduler_thread;
 
-    uint32_t hash(const char* data, size_t n, uint32_t seed);
-    uint32_t decodeFixed32(const char* ptr);
+    std::condition_variable cv;
+    std::mutex cv_mutex;
+
+    // Change this to change various timeouts in this class
+    static constexpr auto timeout = std::chrono::seconds(5);
 };
 }
 
