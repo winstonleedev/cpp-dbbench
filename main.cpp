@@ -3,9 +3,9 @@
 
 #include "ledger/db_provider.h"
 
-#define DEFAULT_TXCOUNT 5000
+#define DEFAULT_TX_COUNT 5000
 #define _ENV(x, y)          (std::getenv(x) ? std::getenv(x) : y)
-#define PATH_STATEDB        _ENV("PATH_STATEDB", "/home/medium/medium/data/states/")
+#define PATH_STATE_DB        _ENV("PATH_STATE_DB", "/home/medium/medium/data/states/")
 
 using namespace avis;
 
@@ -13,14 +13,14 @@ int main(int argc, const char** argv) {
 
     std::cout << "state db initialization start" << std::endl;
 
-    if (!DBProvider::getInstance()->create(PATH_STATEDB)) {
+    if (!DBProvider::getInstance()->create(PATH_STATE_DB)) {
         std::cerr << "error: state db creation failure" << std::endl;
         return 1;
     }
 
     int to, from;
     char cto[9], cfrom[9];
-    int ntx = DEFAULT_TXCOUNT;
+    int ntx = DEFAULT_TX_COUNT;
     StateDB* db = DBProvider::getInstance()->get();
     for (int j = 0; j < 4; j++) {
         for (int i = 0; i < ntx; i++) {

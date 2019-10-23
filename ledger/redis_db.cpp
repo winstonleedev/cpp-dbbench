@@ -89,15 +89,25 @@ bool RedisDB::put(const std::string& key, const std::string& value) {
 }
 
 bool RedisDB::putBatch(const std::string& key, const std::string& value) {
+    put(key, value);
     return true;
 }
 
 bool RedisDB::del(const std::string& key) {
-
+    {
+        std::unique_lock<std::mutex> lock(cv_mutex);
+        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
+                        std::unique_lock<std::mutex> lock(cv_mutex);
+                        cv.notify_one();
+                    },
+                    "DEL", key);
+        cv.wait_for(lock, timeout);
+    }
     return true;
 }
 
 bool RedisDB::delBatch(const std::string& key) {
+    del(key);
     return true;
 }
 

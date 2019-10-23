@@ -70,6 +70,11 @@ RUN git clone -b 1.22 https://github.com/google/leveldb \
     && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -- -j \
     && make install
 
+WORKDIR /src
+RUN git clone -b v6.3.6 https://github.com/facebook/rocksdb \
+    && cd rocksdb \
+    && make shared_lib && make install
+
 # FROM base AS release
 
 ENV RUN_USER medium
