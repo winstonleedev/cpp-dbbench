@@ -27,8 +27,7 @@ RUN apt-get install -y \
     libxslt-dev \
     pkg-config \
     python-dev \
-    wget \
-    redis
+    wget
 
 WORKDIR /src
 ## build boost 1.65.0
@@ -72,9 +71,10 @@ RUN git clone -b 1.22 https://github.com/google/leveldb \
     && make install
 
 WORKDIR /src
-RUN git clone -b v6.3.6 https://github.com/facebook/rocksdb \
-    && cd rocksdb \
-    && make shared_lib && make install
+RUN git clone -b v6.3.6 https://github.com/facebook/rocksdb
+RUN cd rocksdb
+COPY Makefile .
+RUN make shared_lib && make install
 
 # FROM base AS release
 
