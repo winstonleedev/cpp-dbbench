@@ -5,9 +5,25 @@ services:
     image: redis
     restart: always
     hostname: redis:latest
+    networks:
+      dbbench_net:
+        ipv4_address: 172.22.0.2
 
   dbbench:
-    image: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "2200:22"
+    networks:
+      dbbench_net:
+        ipv4_address: 172.22.0.3
+
+networks:
+  dbbench_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/24

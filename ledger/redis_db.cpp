@@ -21,8 +21,8 @@ bool RedisDB::open(const std::string& dbname) {
                 }
             });
 
-    con.connect("127.0.0.1",
-                6379,
+    con.connect(REDIS_IP,
+                REDIS_PORT,
                 [&] (boost::system::error_code const & error)
                 {
                     std::cout << "* Connect callback: ";
