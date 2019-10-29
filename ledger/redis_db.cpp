@@ -26,7 +26,7 @@ bool RedisDB::open(const std::string& dbname) {
                 [&] (boost::system::error_code const & error)
                 {
                     std::cout << "* Connect callback: ";
-                    if (error)
+                    if (error.value() != boost::system::errc::success)
                     {
                         std::cout << "failed. Keep trying..." << std::endl;
                     }
