@@ -10,17 +10,13 @@ creator : hs.kwon
 
 namespace avis {
 
-DBProvider::DBProvider() {
+DBProvider::DBProvider() = default;
 
-}
-
-DBProvider::~DBProvider() {
-
-}
+DBProvider::~DBProvider() = default;
 
 bool DBProvider::create(const std::string& dbname, int dbType) {
 
-    struct stat st;
+    struct stat st{};
     if (stat(dbname.c_str(), &st) != 0) {
         std::string cmd = "mkdir -p ";
         cmd.append(dbname);
@@ -31,6 +27,7 @@ bool DBProvider::create(const std::string& dbname, int dbType) {
         case DBType::LEVEL_DB: _db = new LevelDB(); break;
         case DBType::ROCKS_DB: _db = new RocksDB(); break;
         case DBType::REDIS   : _db = new RedisDB(); break;
+        case DBType::LM_DB    : _db = new LMDB();    break;
         default: _db = new LevelDB(); break;
     }
 

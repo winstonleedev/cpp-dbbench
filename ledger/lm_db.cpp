@@ -1,117 +1,47 @@
-#include <ledger/redis_db.h>
+#include <ledger/lm_db.h>
 
 #include <iostream>
 
 namespace avis {
 
-RedisDB::~RedisDB() {
+LMDB::~LMDB() {
     close();
 }
 
-bool RedisDB::open(const std::string& dbname) {
-    shouldRunScheduler = true;
-    scheduler_thread = std::thread(
-            [&]
-            {
-                while (shouldRunScheduler)
-                {
-                    ios.reset();
-                    ios.run();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
-            });
-
-    con.connect(REDIS_IP,
-                REDIS_PORT,
-                [&] (boost::system::error_code const & error)
-                {
-                    std::cout << "* Connect callback: ";
-                    if (error.value() != boost::system::errc::success)
-                    {
-                        std::cout << "failed. Keep trying..." << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "connected!" << std::endl;
-                        isConnectionOpen = true;
-                    }
-                },
-                [&] (boost::system::error_code const & ec)
-                {
-                    std::cout << "Connection lost. Error core: " << ec << ". Reconnecting..."<< std::endl;
-                });
+bool LMDB::open(const std::string& dbname) {
     return true;
 }
 
-void RedisDB::close() {
-    isConnectionOpen = false;
-    // Proper tear-down
-    con.disconnect();
-    con.sync_join();
-
-    shouldRunScheduler = false;
-    scheduler_thread.join();
+void LMDB::close() {
 }
 
-bool RedisDB::opened() {
-    return isConnectionOpen;
-}
-
-bool RedisDB::get(const std::string& key, std::string* value) {
-    {
-        std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this, value](::nokia::net::proto::redis::reply &&reply) {
-                        if (::nokia::net::proto::redis::reply::NIL == reply.type) {
-                            return false;
-                        } else {
-                            if(value) *value = reply.str;
-                        }
-                        std::unique_lock<std::mutex> lock(cv_mutex);
-                        cv.notify_one();
-                    },
-                    "GET", key);
-        cv.wait_for(lock, timeout);
-    }
+bool LMDB::opened() {
     return true;
 }
 
-bool RedisDB::put(const std::string& key, const std::string& value) {
-    {
-        std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this, value](::nokia::net::proto::redis::reply &&reply) {
-                        std::unique_lock<std::mutex> lock(cv_mutex);
-                        cv.notify_one();
-                    },
-                    "SET", key, value);
-        cv.wait_for(lock, timeout);
-    }
+bool LMDB::get(const std::string& key, std::string* value) {
     return true;
 }
 
-bool RedisDB::putBatch(const std::string& key, const std::string& value) {
+bool LMDB::put(const std::string& key, const std::string& value) {
+    return true;
+}
+
+bool LMDB::putBatch(const std::string& key, const std::string& value) {
     put(key, value);
     return true;
 }
 
-bool RedisDB::del(const std::string& key) {
-    {
-        std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
-                        std::unique_lock<std::mutex> lock(cv_mutex);
-                        cv.notify_one();
-                    },
-                    "DEL", key);
-        cv.wait_for(lock, timeout);
-    }
+bool LMDB::del(const std::string& key) {
     return true;
 }
 
-bool RedisDB::delBatch(const std::string& key) {
+bool LMDB::delBatch(const std::string& key) {
     del(key);
     return true;
 }
 
-bool RedisDB::applyBatch() {
+bool LMDB::applyBatch() {
     return true;
 }
 
