@@ -10,6 +10,12 @@
 
 #include <ledger/state_db.h>
 
+#define LM_DB_PATH "./test_lm_db"
+#define E(expr) CHECK((rc = (expr)) == MDB_SUCCESS, #expr)
+#define RES(err, expr) ((rc = expr) == (err) || (CHECK(!rc, #expr), 0))
+#define CHECK(test, msg) ((test) ? (void)0 : ((void)fprintf(stderr, \
+	"%s:%d: %s: %s\n", __FILE__, __LINE__, msg, mdb_strerror(rc)), abort()))
+
 namespace avis {
 
 class LMDB : public StateDB {
@@ -32,6 +38,14 @@ public:
 private:
     LMDB() = default;
 
+    MDB_env *env;
+    MDB_dbi dbi;
+    MDB_val _key, _data;
+    MDB_txn *txn;
+    MDB_cursor *cursor;
+
+    bool isOpen = false;
+    bool isBatch = false;
 };
 }
 
