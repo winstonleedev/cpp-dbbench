@@ -1,3 +1,6 @@
 [submodule "wiredis"]
 	path = wiredis
 	url = git@github.com:nokia/wiredis.git
+[submodule "lmdb"]
+	path = lmdb
+	url = git@github.com:LMDB/lmdb.git
