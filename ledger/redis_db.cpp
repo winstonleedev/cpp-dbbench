@@ -58,11 +58,12 @@ bool RedisDB::opened() {
 }
 
 bool RedisDB::get(const std::string& key, std::string* value) {
+    bool result = true;
     {
         std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this, value](::nokia::net::proto::redis::reply &&reply) {
+        con.execute([this, value, &result](::nokia::net::proto::redis::reply &&reply) {
                         if (::nokia::net::proto::redis::reply::NIL == reply.type) {
-                            return false;
+                            result = false;
                         } else {
                             if(value) *value = reply.str;
                         }
@@ -72,7 +73,7 @@ bool RedisDB::get(const std::string& key, std::string* value) {
                     "GET", key);
         cv.wait_for(lock, timeout);
     }
-    return true;
+    return result;
 }
 
 bool RedisDB::put(const std::string& key, const std::string& value) {
@@ -89,8 +90,16 @@ bool RedisDB::put(const std::string& key, const std::string& value) {
 }
 
 bool RedisDB::putBatch(const std::string& key, const std::string& value) {
-    put(key, value);
-    return true;
+    {
+        std::unique_lock<std::mutex> lock(cv_mutex);
+        con.execute([this, value](::nokia::net::proto::redis::reply &&reply) {
+                        std::unique_lock<std::mutex> lock(cv_mutex);
+                        cv.notify_one();
+                    },
+                    "MULTI");
+        cv.wait_for(lock, timeout);
+    }
+    return put(key, value);
 }
 
 bool RedisDB::del(const std::string& key) {
@@ -107,11 +116,28 @@ bool RedisDB::del(const std::string& key) {
 }
 
 bool RedisDB::delBatch(const std::string& key) {
-    del(key);
-    return true;
+    {
+        std::unique_lock<std::mutex> lock(cv_mutex);
+        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
+                        std::unique_lock<std::mutex> lock(cv_mutex);
+                        cv.notify_one();
+                    },
+                    "MULTI");
+        cv.wait_for(lock, timeout);
+    }
+    return del(key);
 }
 
 bool RedisDB::applyBatch() {
+    {
+        std::unique_lock<std::mutex> lock(cv_mutex);
+        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
+                        std::unique_lock<std::mutex> lock(cv_mutex);
+                        cv.notify_one();
+                    },
+                    "EXEC");
+        cv.wait_for(lock, timeout);
+    }
     return true;
 }
 

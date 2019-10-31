@@ -46,6 +46,7 @@ private:
     static constexpr auto timeout = std::chrono::seconds(5);
     static constexpr auto REDIS_IP = "172.22.0.2";
     static constexpr auto REDIS_PORT = 6379;
+
 };
 }
 
