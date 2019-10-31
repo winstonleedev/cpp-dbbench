@@ -91,6 +91,7 @@ int main(int argc, const char** argv) {
 void integrity_test() {
     std::cout << "Integrity test start" << std::endl;
     for (int dbType = 0; dbType < 4; dbType++) {
+        std::cout << "== Testing DB Type " << dbType << " ==" << std::endl;
         integrity_test(dbType);
     }
     std::cout << "Integrity test end" << std::endl;
@@ -117,7 +118,7 @@ void integrity_test(int dbType) {
 
     std::this_thread::sleep_for(1s);
 
-    std::string* valueResult = nullptr;
+    auto* valueResult = new std::string();
     auto callResult = db->get("foo", valueResult);
     condition_test(callResult, "call get");
     condition_test(*valueResult == "100", "get result match");

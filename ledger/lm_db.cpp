@@ -69,8 +69,7 @@ bool LMDB::putBatch(const std::string& key, const std::string& value) {
     _data.mv_size = sizeof(char) * value.size();
     _data.mv_data = (void *)value.c_str();
 
-    mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA);
-    return true;
+    return mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA) == 0;
 }
 
 bool LMDB::del(const std::string& key) {
@@ -89,11 +88,21 @@ bool LMDB::del(const std::string& key) {
 }
 
 bool LMDB::delBatch(const std::string& key) {
-    del(key);
-    return true;
+    if (!isBatch) {
+        mdb_txn_begin(env, nullptr, 0, &txn);
+        isBatch = true;
+    }
+
+    _key.mv_size = sizeof(char) * key.size();
+    _key.mv_data = (void *)key.c_str();
+
+    return mdb_del(txn, dbi, &_key, nullptr) == 0;
 }
 
 bool LMDB::applyBatch() {
+    if (!isBatch) {
+        return false;
+    }
     bool result = mdb_txn_commit(txn) == 0;
     isBatch = false;
     return result;

@@ -36,7 +36,7 @@ private:
     MDB_dbi dbi;
     MDB_val _key, _data;
     MDB_txn *txn;
-    MDB_cursor *cursor;
+    MDB_cursor *cursor, *cursor2;
 
     bool isOpen = false;
     bool isBatch = false;
