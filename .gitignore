@@ -600,3 +600,5 @@ MigrationBackup/
 
 !.idea/runConfigurations
 !.idea/runConfigurations/*
+
+*.txt

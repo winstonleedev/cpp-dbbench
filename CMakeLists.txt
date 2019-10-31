@@ -41,3 +41,5 @@ PUBLIC
     ${Boost_LIBRARIES}
     Threads::Threads
 )
+
+configure_file(all.sh all.sh COPYONLY)
