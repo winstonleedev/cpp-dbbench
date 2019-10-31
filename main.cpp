@@ -43,9 +43,9 @@ struct options handle_arguments(int ac, const char **av) {
     desc.add_options()
             ("help", "produce help message")
             ("db", po::value<int>(), "(required) select database: 0 - level db, 1 - rocks db, 2 - redis, 3 - LM DB")
-            ("integrity", "perform integrity test for all databases")
-            ("read", "ratio of read ops per 100 ops e.g 20, the rest will be write ops")
-            ("duration", "how long should the test be run in seconds. default to 60");
+            ("integrity", po::value<int>(), "perform integrity test for all databases")
+            ("read", po::value<int>(), "ratio of read ops per 100 ops e.g 20, the rest will be write ops")
+            ("duration", po::value<int>(), "how long should the test be run in seconds. default to 60");
 
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
@@ -223,6 +223,9 @@ void full_test(options opts) {
     std::cout << "Write Ops: " << writeCount << " (" << (writeCount / elapsedSec) << " ops / sec)" << std::endl;
     auto totalCount = readCount + writeCount;
     std::cout << "Total Ops: " << totalCount << " (" << (totalCount / elapsedSec) << " ops / sec)" << std::endl;
+
+    std::cout << opts.dbType << "," << elapsedSec << ","<< readCount << "," << std::endl;
+    std::cout << opts.dbType << "," << elapsedSec << ","<< writeCount << "," << std::endl;
 
     // Clean up
     db->clear();
