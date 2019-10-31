@@ -27,10 +27,31 @@ bool DBProvider::create(const std::string& dbname, int dbType) {
         case DBType::LEVEL_DB: _db = new LevelDB(); break;
         case DBType::ROCKS_DB: _db = new RocksDB(); break;
         case DBType::REDIS   : _db = new RedisDB(); break;
-        case DBType::LM_DB    : _db = new LMDB();    break;
+        case DBType::LM_DB   : _db = new LMDB();    break;
         default: _db = new LevelDB(); break;
     }
 
     return _db->open(dbname);
+}
+
+StateDB* DBProvider::createSingle(const std::string& dbname, int dbType) {
+    StateDB* _db{};
+
+    struct stat st{};
+    if (stat(dbname.c_str(), &st) != 0) {
+        std::string cmd = "mkdir -p ";
+        cmd.append(dbname);
+        system(cmd.c_str());
+    }
+
+    switch (dbType) {
+        case DBType::LEVEL_DB: _db = new LevelDB(); break;
+        case DBType::ROCKS_DB: _db = new RocksDB(); break;
+        case DBType::REDIS   : _db = new RedisDB(); break;
+        case DBType::LM_DB   : _db = new LMDB();    break;
+        default: _db = new LevelDB(); break;
+    }
+
+    return _db;
 }
 }

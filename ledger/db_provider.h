@@ -26,6 +26,7 @@ public:
     }
     
     bool create(const std::string& dbname, int dbType);
+    static StateDB* createSingle(const std::string& dbname, int dbType);
     [[nodiscard]] StateDB* get() const { return _db; }
 
     enum DBType {
