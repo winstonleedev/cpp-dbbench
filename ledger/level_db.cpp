@@ -12,7 +12,7 @@ LevelDB::~LevelDB() {
 }
 
 bool LevelDB::open(const std::string& dbname) {
-
+    this->dbname = dbname;
     for (int idx = 0; idx < (1 << _shardBits); idx++) {
         leveldb::DB* ldb;
         leveldb::Options opts;
@@ -207,4 +207,5 @@ uint32_t LevelDB::decodeFixed32(const char* ptr) {
         (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 16) |
         (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3])) << 24));
 }
+
 }

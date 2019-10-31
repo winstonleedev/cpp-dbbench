@@ -61,34 +61,6 @@ int main(int argc, const char **argv) {
     auto options = handle_arguments(argc, argv);
 
     return 0;
-
-    std::cout << "state db initialization start" << std::endl;
-
-    if (!DBProvider::getInstance()->create(PATH_STATE_DB, options.dbType)) {
-        std::cerr << "error: state db creation failure" << std::endl;
-        return 1;
-    }
-
-    int to, from;
-    char cto[9], cfrom[9];
-    int ntx = DEFAULT_TX_COUNT;
-    StateDB *db = DBProvider::getInstance()->get();
-    for (int j = 0; j < 4; j++) {
-        for (int i = 0; i < ntx; i++) {
-            to = (j + 1) * 1000000 + 1;
-            from = (j + 1) * 10000000 + (j + 1) * 1000000 + 1;
-            std::sprintf(cto, "%08X", i + to);
-            std::sprintf(cfrom, "%08X", i + from);
-
-            db->put(cto, "500");
-            db->put(cfrom, "500");
-        }
-    }
-
-    db->put("total-common-token", std::to_string(500 * 2 * ntx));
-    std::cout << "total-common-token " << std::to_string(500 * 2 * ntx) << std::endl;
-    std::cout << "state db initialization end" << std::endl;
-    return 0;
 }
 
 void integrity_test() {
@@ -106,7 +78,7 @@ void integrity_test() {
 void integrity_test(int dbType) {
     using namespace std::chrono_literals;
     StateDB *db = DBProvider::createSingle(PATH_STATE_DB + std::to_string(dbType), dbType);
-
+    db->clear();
     if (!db->open(PATH_STATE_DB + std::to_string(dbType))) {
         std::cerr << "error: state db creation failure" << std::endl;
         exit(1);
@@ -137,12 +109,12 @@ void integrity_test(int dbType) {
     condition_test(db->delBatch("baz"), "");
     condition_test(db->applyBatch(), "");
 
-    std::this_thread::sleep_for(2s);
+    std::this_thread::sleep_for(1s);
 
     *valueResult = "";
     callResult = db->get("foo", valueResult);
     condition_test(!callResult, "deleted");
-
+    db->clear();
     delete db;
 }
 

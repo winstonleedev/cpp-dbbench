@@ -9,6 +9,7 @@ LMDB::~LMDB() {
 }
 
 bool LMDB::open(const std::string& dbname) {
+    this->dbname = dbname;
     mdb_env_create(&env);
     int rc = mdb_env_open(env, dbname.c_str(), 0, 0664);;
     if (rc == 0) {

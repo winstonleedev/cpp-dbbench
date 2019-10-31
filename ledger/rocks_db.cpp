@@ -12,7 +12,7 @@ RocksDB::~RocksDB() {
 }
 
 bool RocksDB::open(const std::string& dbname) {
-
+    this->dbname = dbname;
     for (int idx = 0; idx < (1 << _shardBits); idx++) {
         rocksdb::DB* ldb;
         rocksdb::Options opts;

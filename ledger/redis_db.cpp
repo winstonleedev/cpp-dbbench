@@ -25,20 +25,20 @@ bool RedisDB::open(const std::string& dbname) {
                 REDIS_PORT,
                 [&] (boost::system::error_code const & error)
                 {
-                    std::cout << "* Connect callback: ";
+                    // std::cout << "* Connect callback: ";
                     if (error.value() != boost::system::errc::success)
                     {
-                        std::cout << "failed. Keep trying..." << std::endl;
+                        // std::cout << "failed. Keep trying..." << std::endl;
                     }
                     else
                     {
-                        std::cout << "connected!" << std::endl;
+                        // std::cout << "connected!" << std::endl;
                         isConnectionOpen = true;
                     }
                 },
                 [&] (boost::system::error_code const & ec)
                 {
-                    std::cout << "Connection lost. Error core: " << ec << ". Reconnecting..."<< std::endl;
+                    // std::cout << "Connection lost. Error core: " << ec << ". Reconnecting..."<< std::endl;
                 });
     return true;
 }
