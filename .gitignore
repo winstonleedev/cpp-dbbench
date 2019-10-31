@@ -602,3 +602,4 @@ MigrationBackup/
 !.idea/runConfigurations/*
 
 *.txt
+dbbench-docker/.data

@@ -71,7 +71,7 @@ bool RedisDB::get(const std::string& key, std::string* value) {
                         cv.notify_one();
                     },
                     "GET", key);
-        cv.wait_for(lock, timeout);
+        // cv.wait_for(lock, timeout);
     }
     return result;
 }
@@ -84,7 +84,7 @@ bool RedisDB::put(const std::string& key, const std::string& value) {
                         cv.notify_one();
                     },
                     "SET", key, value);
-        cv.wait_for(lock, timeout);
+        // cv.wait_for(lock, timeout);
     }
     return true;
 }
@@ -97,7 +97,7 @@ bool RedisDB::putBatch(const std::string& key, const std::string& value) {
                         cv.notify_one();
                     },
                     "MULTI");
-        cv.wait_for(lock, timeout);
+        // cv.wait_for(lock, timeout);
     }
     return put(key, value);
 }
@@ -110,7 +110,7 @@ bool RedisDB::del(const std::string& key) {
                         cv.notify_one();
                     },
                     "DEL", key);
-        cv.wait_for(lock, timeout);
+        // cv.wait_for(lock, timeout);
     }
     return true;
 }
@@ -123,7 +123,7 @@ bool RedisDB::delBatch(const std::string& key) {
                         cv.notify_one();
                     },
                     "MULTI");
-        cv.wait_for(lock, timeout);
+        // cv.wait_for(lock, timeout);
     }
     return del(key);
 }
@@ -136,7 +136,7 @@ bool RedisDB::applyBatch() {
                         cv.notify_one();
                     },
                     "EXEC");
-        cv.wait_for(lock, timeout);
+        // cv.wait_for(lock, timeout);
     }
     return true;
 }

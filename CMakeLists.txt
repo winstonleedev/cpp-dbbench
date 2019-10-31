@@ -36,10 +36,11 @@ add_executable(${CMAKE_PROJECT_NAME} ${ALLSRC})
 target_link_libraries(${CMAKE_PROJECT_NAME}
 PUBLIC
     ${LD_LIBRARY_PATH}
+    dl
+    Threads::Threads
+    ${Boost_LIBRARIES}
     ${LEVELDB_PATH}
     ${ROCKSDB_PATH}
-    ${Boost_LIBRARIES}
-    Threads::Threads
 )
 
 configure_file(all.sh all.sh COPYONLY)
