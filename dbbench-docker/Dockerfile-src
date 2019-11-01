@@ -1,33 +1,4 @@
-FROM ubuntu:18.04 AS base
-
-ENV LD_LIBRARY_PATH /usr/local/lib
-
-RUN apt-get update \
-    && apt-get install -y \
-    build-essential \
-    cmake=3.10.2-1ubuntu2.18.04.1 \
-    git \
-    g++ \
-    libevent-dev=2.1.8-stable-4build1 \
-    libpthread-stubs0-dev=0.3-4 \
-    libsecp256k1-dev=0.1~20170810-1 \
-    libssl-dev=1.1.1-1ubuntu2.1~18.04.4 \
-    python3
-
-
-FROM base AS build
-
-RUN apt-get install -y \
-    autoconf \
-    automake \
-    clang-5.0=1:5.0.1-4 \
-    libc++-dev=6.0-2 \
-    libtool \
-    libxml2-dev \
-    libxslt-dev \
-    pkg-config \
-    python-dev \
-    wget
+FROM thanhphu/dbbench-base
 
 WORKDIR /src
 ## build boost 1.65.0
@@ -76,27 +47,19 @@ RUN git clone -b v6.4.6 https://github.com/facebook/rocksdb \
     && EXTRA_LDFLAGS="-ldl" make shared_lib \
     && make install
 
-FROM base AS release
+ENV REDIS_VERSION=4.0.9 \
+    REDIS_USER=redis \
+    REDIS_DATA_DIR=/var/lib/redis \
+    REDIS_LOG_DIR=/var/log/redis
 
-ENV RUN_USER medium
-ENV RUN_GROUP medium
-ENV USER_PASSWORD medium@1234
-ENV DEBIAN_FRONTEND noninteractive
-RUN useradd -ms /bin/bash ${RUN_USER}
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server=5:${REDIS_VERSION}* \
+ && sed 's/^bind /# bind /' -i /etc/redis/redis.conf \
+ && sed 's/^logfile /# logfile /' -i /etc/redis/redis.conf \
+ && sed 's/^daemonize yes/daemonize no/' -i /etc/redis/redis.conf \
+ && sed 's/^protected-mode yes/protected-mode no/' -i /etc/redis/redis.conf \
+ && sed 's/^# unixsocket /unixsocket /' -i /etc/redis/redis.conf \
+ && sed 's/^# unixsocketperm 700/unixsocketperm 777/' -i /etc/redis/redis.conf \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get -y install \
-    gdb=8.1-0ubuntu3 \
-    gdbserver=8.1-0ubuntu3 \
-    openssh-server \
-    rsync=3.1.2-2.1ubuntu1
-
-COPY --from=build /usr/local/ /usr/local/
-COPY --from=build /usr/include/ /usr/include/
-
-USER ${RUN_USER}
-COPY entrypoint.sh /
-USER root
-CMD ["/entrypoint.sh", "-fg"]
-ENTRYPOINT ["/bin/bash", "--"]
-
-EXPOSE 22
+EXPOSE 6379/tcp

@@ -1,0 +1,9 @@
+FROM thanhphu/dbbench-src
+
+USER ${RUN_USER}
+COPY entrypoint.sh /
+USER root
+CMD ["/entrypoint.sh", "-fg"]
+ENTRYPOINT ["/bin/bash", "--"]
+
+EXPOSE 22
