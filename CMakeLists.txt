@@ -33,10 +33,11 @@ file(GLOB ALLSRC
 
 add_executable(${CMAKE_PROJECT_NAME} ${ALLSRC})
 
+message(STATUS "CMAKE_DL_LIBS: ${CMAKE_DL_LIBS}")
 target_link_libraries(${CMAKE_PROJECT_NAME}
 PUBLIC
     ${LD_LIBRARY_PATH}
-    dl
+    ${CMAKE_DL_LIBS}
     Threads::Threads
     ${Boost_LIBRARIES}
     ${LEVELDB_PATH}

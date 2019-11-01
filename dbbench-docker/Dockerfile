@@ -15,7 +15,7 @@ RUN apt-get update \
     python3
 
 
-# FROM base AS build
+FROM base AS build
 
 RUN apt-get install -y \
     autoconf \
@@ -71,12 +71,12 @@ RUN git clone -b 1.22 https://github.com/google/leveldb \
     && make install
 
 WORKDIR /src
-RUN git clone -b v6.3.6 https://github.com/facebook/rocksdb \
-    && cd rocksdb
-    && EXTRA_LDFLAGS="-ldl" make shared_lib
+RUN git clone -b v6.4.6 https://github.com/facebook/rocksdb \
+    && cd rocksdb \
+    && EXTRA_LDFLAGS="-ldl" make shared_lib \
     && make install
 
-# FROM base AS release
+FROM base AS release
 
 ENV RUN_USER medium
 ENV RUN_GROUP medium
@@ -90,8 +90,8 @@ RUN apt-get -y install \
     openssh-server \
     rsync=3.1.2-2.1ubuntu1
 
-# COPY --from=build /usr/local/ /usr/local/
-# COPY --from=build /usr/include/ /usr/include/
+COPY --from=build /usr/local/ /usr/local/
+COPY --from=build /usr/include/ /usr/include/
 
 USER ${RUN_USER}
 COPY entrypoint.sh /

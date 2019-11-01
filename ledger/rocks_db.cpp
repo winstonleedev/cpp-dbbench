@@ -18,9 +18,15 @@ bool RocksDB::open(const std::string& dbname) {
         rocksdb::Options opts;
         rocksdb::Status  status;
 
+        long cache_size = (1 + 9 + 8 + 1 + 4) * 800 * 10000;
         opts.create_if_missing = true;
-        opts.compression = rocksdb::CompressionType::kNoCompression;
-        // opts.block_cache = rocksdb::NewLRUCache((1 + 9 + 8 + 1 + 4) * 800 * 10000 / (1 << _shardBits) * 2);
+        opts.paranoid_checks = false;
+        opts.table_cache_numshardbits = _shardBits;
+        opts.allow_mmap_reads = true;
+        opts.allow_mmap_writes = true;
+        opts.db_write_buffer_size = cache_size;
+        opts.unordered_write = true;
+        opts.row_cache = rocksdb::NewLRUCache(cache_size);
         //opts.block_cache       = rocksdb::NewLRUCache(1024 * 1024 * 1024);
         //opts.filter_policy     = rocksdb::NewBloomFilterPolicy(10);
 
