@@ -40,21 +40,6 @@ create_socket_dir
 create_data_dir
 create_log_dir
 
-# allow arguments to be passed to redis-server
-if [[ ${1:0:1} = '-' ]]; then
-  EXTRA_ARGS="$@"
-  set --
-fi
-
-# default behaviour is to launch redis-server
-if [[ -z ${1} ]]; then
-  echo "Starting redis-server..."
-  exec start-stop-daemon --start --chuid ${REDIS_USER}:${REDIS_USER} --exec $(which redis-server) -- \
-    /etc/redis/redis.conf ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD} ${EXTRA_ARGS}
-else
-  exec "$@"
-fi
-
 ldconfig
 
 chsh -s /bin/bash ${RUN_USER}
@@ -75,3 +60,14 @@ mkdir -p /run/sshd
 
 service ssh start
 
+# first arg is `-f` or `--some-option`
+# or first arg is `something.conf`
+if [ "${1#-}" != "$1" ] || [ "${1%.conf}" != "$1" ]; then
+	set -- redis-server "$@"
+fi
+
+# allow the container to be started with `--user`
+if [ "$1" = 'redis-server' -a "$(id -u)" = '0' ]; then
+	find . \! -user redis -exec chown redis '{}' +
+	exec speedus gosu redis "$0" "$@"
+fi

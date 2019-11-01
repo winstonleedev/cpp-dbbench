@@ -54,12 +54,29 @@ ENV REDIS_VERSION=4.0.9 \
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server=5:${REDIS_VERSION}* \
- && sed 's/^bind /# bind /' -i /etc/redis/redis.conf \
- && sed 's/^logfile /# logfile /' -i /etc/redis/redis.conf \
- && sed 's/^daemonize yes/daemonize no/' -i /etc/redis/redis.conf \
- && sed 's/^protected-mode yes/protected-mode no/' -i /etc/redis/redis.conf \
- && sed 's/^# unixsocket /unixsocket /' -i /etc/redis/redis.conf \
- && sed 's/^# unixsocketperm 700/unixsocketperm 777/' -i /etc/redis/redis.conf \
+ && rm /etc/redis/redis.conf \
  && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 6379/tcp
+
+ENV ROOT_HOME /root
+ENV SPEEDUS_DIR /opt/torusware/speedus
+ENV NETPIPE_DIR $SPEEDUS_DIR/benchmarks/NetPIPE-C
+
+RUN apt-get update \
+ && apt-get -qqy install wget unzip make gcc \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/torusware \
+ && cd /opt/torusware \
+ && wget http://dl.torusware.com/speedus/release/speedus-latest-linux.zip \
+ && unzip speedus-latest-linux.zip \
+ && rm speedus-latest-linux.zip \
+ && ln -s speedus-b* $SPEEDUS_DIR \
+ && cp $SPEEDUS_DIR/doc/README.image.txt $ROOT_HOME/SPEEDUS_README.txt
+
+RUN cd $NETPIPE_DIR \
+ && make \
+ && cp NPtcp /usr/bin/NPtcp
+
+COPY speedus /usr/local/bin/speedus
