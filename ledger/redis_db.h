@@ -1,10 +1,6 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <thread>
-
-#include <boost/asio.hpp>
+#include <cstring>
 
 #include <hiredis/hiredis.h>
 
@@ -32,6 +28,8 @@ public:
 private:
     RedisDB() = default;
 
+    bool isOpen = false;
+    bool isBatch = false;
     redisContext *c;
 
     struct timeval timeout = { 1, 500000 }; // 1.5 seconds
