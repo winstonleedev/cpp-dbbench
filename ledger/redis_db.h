@@ -6,8 +6,7 @@
 
 #include <boost/asio.hpp>
 
-#include <wiredis/redis-connection.h>
-#include <wiredis/tcp-connection.h>
+#include <hiredis/hiredis.h>
 
 #include <ledger/state_db.h>
 
@@ -33,20 +32,9 @@ public:
 private:
     RedisDB() = default;
 
-    ::boost::asio::io_service ios;
-    ::nokia::net::redis_connection con = ::nokia::net::redis_connection(ios);
-    bool isConnectionOpen = false;
-    bool shouldRunScheduler = false;
-    std::thread scheduler_thread;
+    redisContext *c;
 
-    std::condition_variable cv;
-    std::mutex cv_mutex;
-
-    // Change this to change various timeouts in this class
-    static constexpr auto timeout = std::chrono::seconds(5);
-    static constexpr auto REDIS_IP = "localhost";
-    static constexpr auto REDIS_PORT = 6379;
-
+    struct timeval timeout = { 1, 500000 }; // 1.5 seconds
 };
 }
 

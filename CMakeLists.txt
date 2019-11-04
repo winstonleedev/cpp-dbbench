@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(dbbench)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(GNUInstallDirs)
 
@@ -10,6 +11,7 @@ find_library(ROCKSDB_PATH NAMES rocksdb PATHS /usr)
 
 find_package(Threads REQUIRED)
 find_package(Boost COMPONENTS system program_options REQUIRED)
+find_package(hiredis REQUIRED)
 
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 message(STATUS "Boost dirs: ${Boost_INCLUDE_DIR}")
@@ -17,6 +19,7 @@ message(STATUS "ROCKSDB_PATH: ${ROCKSDB_PATH}")
 
 include_directories(
     ${Boost_INCLUDE_DIR}
+    ${HIREDIS_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/wiredis/include
 )
@@ -40,6 +43,7 @@ PUBLIC
     ${CMAKE_DL_LIBS}
     Threads::Threads
     ${Boost_LIBRARIES}
+    ${HIREDIS_LIBRARIES}
     ${LEVELDB_PATH}
     ${ROCKSDB_PATH}
 )

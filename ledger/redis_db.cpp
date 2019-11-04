@@ -9,135 +9,60 @@ RedisDB::~RedisDB() {
 }
 
 bool RedisDB::open(const std::string& dbname) {
-    shouldRunScheduler = true;
-    scheduler_thread = std::thread(
-            [&]
-            {
-                while (shouldRunScheduler) {
-                    ios.reset();
-                    ios.run();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-            });
-
-    con.connect(REDIS_IP,
-                REDIS_PORT,
-                [&] (boost::system::error_code const & error)
-                {
-                    // std::cout << "* Connect callback: ";
-                    if (error.value() != boost::system::errc::success)
-                    {
-                        // std::cout << "failed. Keep trying..." << std::endl;
-                    }
-                    else
-                    {
-                        // std::cout << "connected!" << std::endl;
-                        isConnectionOpen = true;
-                    }
-                },
-                [&] (boost::system::error_code const & ec)
-                {
-                    // std::cout << "Connection lost. Error core: " << ec << ". Reconnecting..."<< std::endl;
-                });
+    c = redisConnectUnixWithTimeout("/tmp/redis.sock", timeout);
+    if (c == NULL || c->err) {
+        if (c) {
+            printf("Connection error: %s\n", c->errstr);
+            redisFree(c);
+        } else {
+            printf("Connection error: can't allocate redis context\n");
+        }
+        return false;
+    }
     return true;
 }
 
 void RedisDB::close() {
-    isConnectionOpen = false;
-    shouldRunScheduler = false;
-
-    // Proper tear-down
-    con.disconnect();
-    con.sync_join();
-
-    scheduler_thread.join();
 }
 
 bool RedisDB::opened() {
-    return isConnectionOpen;
+    return false;
 }
 
 bool RedisDB::get(const std::string& key, std::string* value) {
-    bool result = true;
-    {
-        // std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this, value, &result](::nokia::net::proto::redis::reply &&reply) {
-                        if (::nokia::net::proto::redis::reply::NIL == reply.type) {
-                            result = false;
-                        } else {
-                            if(value) *value = reply.str;
-                        }
-                        // std::unique_lock<std::mutex> lock(cv_mutex);
-                        // cv.notify_one();
-                    },
-                    "GET", key);
-        // cv.wait_for(lock, timeout);
-    }
-    return result;
+    redisReply *reply = (redisReply *)redisCommand(c,"GET %s", key);
+    *value = reply->str;
+    freeReplyObject(reply);
+    return true;
 }
 
 bool RedisDB::put(const std::string& key, const std::string& value) {
-    {
-        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this, value](::nokia::net::proto::redis::reply &&reply) {
-                        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-                        /* */cv.notify_one();
-                    },
-                    "SET", key, value);
-        /* */cv.wait_for(lock, timeout);
-    }
+    redisReply *reply = (redisReply *)redisCommand(c,"SET %s %s", key, value);
+    freeReplyObject(reply);
     return true;
 }
 
 bool RedisDB::putBatch(const std::string& key, const std::string& value) {
-    {
-        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this, value](::nokia::net::proto::redis::reply &&reply) {
-                        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-                        /* */cv.notify_one();
-                    },
-                    "MULTI");
-        /* */cv.wait_for(lock, timeout);
-    }
+    redisReply *reply = (redisReply *)redisCommand(c,"MULTI");
+    freeReplyObject(reply);
     return put(key, value);
 }
 
 bool RedisDB::del(const std::string& key) {
-    {
-        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
-                        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-                        /* */cv.notify_one();
-                    },
-                    "DEL", key);
-        /* */cv.wait_for(lock, timeout);
-    }
+    redisReply *reply = (redisReply *)redisCommand(c,"DEL %s", key);
+    freeReplyObject(reply);
     return true;
 }
 
 bool RedisDB::delBatch(const std::string& key) {
-    {
-        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
-                        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-                        /* */cv.notify_one();
-                    },
-                    "MULTI");
-        /* */cv.wait_for(lock, timeout);
-    }
+    redisReply *reply = (redisReply *)redisCommand(c,"MULTI");
+    freeReplyObject(reply);
     return del(key);
 }
 
 bool RedisDB::applyBatch() {
-    {
-        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-        con.execute([this](::nokia::net::proto::redis::reply &&reply) {
-                        /* */std::unique_lock<std::mutex> lock(cv_mutex);
-                        /* */cv.notify_one();
-                    },
-                    "EXEC");
-        /* */cv.wait_for(lock, timeout);
-    }
+    redisReply *reply = (redisReply *)redisCommand(c,"EXEC");
+    freeReplyObject(reply);
     return true;
 }
 
