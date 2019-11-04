@@ -88,13 +88,15 @@ void full_test(options opts) {
         exit(1);
     }
 
+    std::string long_string(opts.stringLength - 3,  'x');
+
     while (!db->opened()) {
         std::this_thread::sleep_for(1s);
     }
 
     // Create some fixed value for reading
-    for (int i = 0; i < 100; i++) {
-        db->put(std::to_string(i), std::to_string(randBig()));
+    for (int i = 0; i < 10000; i++) {
+        db->put(std::to_string(i), long_string + std::to_string(randBig()));
     }
 
     // Counter start
@@ -106,7 +108,7 @@ void full_test(options opts) {
     long readCount = 0, writeCount = 0;
     auto* readResult = new std::string;
     while (std::chrono::system_clock::now() < end) {
-        int index = rand100();
+        int index = rand10000();
         if (index < opts.readWeight) {
             readCount++;
             // Do read
@@ -114,7 +116,7 @@ void full_test(options opts) {
         } else {
             writeCount++;
             // Do write
-            db->put(std::to_string(index), std::to_string(randBig()));
+            db->put(std::to_string(index), long_string + std::to_string(randBig()));
         }
     }
     // Counter end, print results

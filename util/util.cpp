@@ -7,10 +7,10 @@
 // Seed with a real random value, if available
 std::random_device r;
 std::default_random_engine random_engine(r());
-std::uniform_int_distribution<int> uniform_dist(0, 100);
+std::uniform_int_distribution<int> uniform_dist(0, 10000);
 std::uniform_int_distribution<int> uniform_dist_big(0, 30000);
 
-int rand100() {
+int rand10000() {
     return (uniform_dist(random_engine));
 }
 

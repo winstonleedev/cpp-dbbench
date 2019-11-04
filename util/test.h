@@ -24,6 +24,7 @@ struct options {
     int readWeight;
     int writeWeight;
     int duration;
+    int stringLength;
 };
 
 // Function declaration

@@ -56,7 +56,7 @@ bool RedisDB::applyBatch() {
 }
 
 void RedisDB::clear() {
-    redis->command("FLUSHALL");
+    redis->flushall(true);
 }
 
 }

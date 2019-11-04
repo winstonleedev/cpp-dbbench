@@ -10,6 +10,8 @@
 
 #include <ledger/state_db.h>
 
+#define MDB_OK 0
+
 namespace avis {
 
 class LMDB : public StateDB {
@@ -31,6 +33,7 @@ public:
 
 private:
     LMDB() = default;
+
 
     MDB_env *env;
     MDB_dbi dbi;

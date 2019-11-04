@@ -52,6 +52,9 @@ struct options handle_arguments(int ac, const char **av) {
     } else {
         result.duration = 60;
     }
+
+    result.stringLength = 5000;
+
     return result;
 }
 

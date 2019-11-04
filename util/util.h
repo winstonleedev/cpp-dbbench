@@ -12,7 +12,7 @@
 
 namespace fs = std::experimental::filesystem;
 
-int rand100();
+int rand10000();
 int randBig();
 long treeSize(const fs::path& pathToShow);
 

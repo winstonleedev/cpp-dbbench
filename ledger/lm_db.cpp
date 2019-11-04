@@ -14,12 +14,17 @@ bool LMDB::open(const std::string& dbname) {
     int rc = mdb_env_open(env, dbname.c_str(), 0, 0664);;
     if (rc == 0) {
         isOpen = true;
+    } else {
+        return false;
     }
-    return rc == 0;
+    mdb_txn_begin(env, nullptr, 0, &txn);
+    mdb_dbi_open(txn, nullptr, 0, &dbi);
+    return true;
 }
 
 void LMDB::close() {
     mdb_dbi_close(env, dbi);
+    mdb_txn_commit(txn);
     mdb_env_close(env);
 }
 
@@ -28,85 +33,53 @@ bool LMDB::opened() {
 }
 
 bool LMDB::get(const std::string& key, std::string* value) {
-    mdb_txn_begin(env, nullptr, MDB_RDONLY, &txn);
-    mdb_cursor_open(txn, dbi, &cursor);
-
     _key.mv_size = sizeof(char) * key.size();
     _key.mv_data = (void *)key.c_str();
 
-    int rc = mdb_cursor_get(cursor, &_key, &_data, MDB_NEXT);
+    int rc = mdb_get(txn, dbi, &_key, &_data);
     if (rc == 0) {
-        if(value) *value = std::string((char *) _data.mv_data);
+        if(value) *value = std::string((char *) _data.mv_data, _data.mv_size);
+        return true;
     }
-    mdb_cursor_close(cursor);
-    mdb_txn_abort(txn);
-    return rc == 0;
+    return false;
 }
 
 bool LMDB::put(const std::string& key, const std::string& value) {
-    mdb_txn_begin(env, nullptr, 0, &txn);
-    mdb_dbi_open(txn, nullptr, 0, &dbi);
-
     _key.mv_size = sizeof(char) * key.size();
     _key.mv_data = (void *)key.c_str();
 
     _data.mv_size = sizeof(char) * value.size();
     _data.mv_data = (void *)value.c_str();
 
-    mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA);
-    return mdb_txn_commit(txn) == 0;
+    return mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA) == MDB_OK;
 }
 
 bool LMDB::putBatch(const std::string& key, const std::string& value) {
-    if (!isBatch) {
-        mdb_txn_begin(env, nullptr, 0, &txn);
-        mdb_dbi_open(txn, nullptr, 0, &dbi);
-        isBatch = true;
-    }
-
     _key.mv_size = sizeof(char) * key.size();
     _key.mv_data = (void *)key.c_str();
 
     _data.mv_size = sizeof(char) * value.size();
     _data.mv_data = (void *)value.c_str();
 
-    return mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA) == 0;
+    return mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA) == MDB_OK;
 }
 
 bool LMDB::del(const std::string& key) {
-    mdb_txn_begin(env, NULL, 0, &txn);
-
     _key.mv_size = sizeof(char) * key.size();
     _key.mv_data = (void *)key.c_str();
 
-    int result = mdb_del(txn, dbi, &_key, nullptr);
-    if (MDB_NOTFOUND == result) {
-        mdb_txn_abort(txn);
-    } else {
-        mdb_txn_commit(txn);
-    }
-    return result != MDB_NOTFOUND;
+    return mdb_del(txn, dbi, &_key, nullptr) != MDB_NOTFOUND;
 }
 
 bool LMDB::delBatch(const std::string& key) {
-    if (!isBatch) {
-        mdb_txn_begin(env, nullptr, 0, &txn);
-        isBatch = true;
-    }
-
     _key.mv_size = sizeof(char) * key.size();
     _key.mv_data = (void *)key.c_str();
-
-    return mdb_del(txn, dbi, &_key, nullptr) == 0;
+    return mdb_del(txn, dbi, &_key, nullptr) != MDB_NOTFOUND;
 }
 
 bool LMDB::applyBatch() {
-    if (!isBatch) {
-        return false;
-    }
-    bool result = mdb_txn_commit(txn) == 0;
-    isBatch = false;
-    return result;
+    return mdb_txn_commit(txn) == MDB_OK
+        && mdb_txn_begin(env, nullptr, 0, &txn) == MDB_OK;
 }
 
 }
