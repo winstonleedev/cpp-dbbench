@@ -54,8 +54,10 @@ ENV REDIS_VERSION=4.0.9 \
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server=5:${REDIS_VERSION}* \
- && rm /etc/redis/redis.conf \
- && rm -rf /var/lib/apt/lists/*
+ && rm /etc/redis/redis.conf
+
+RUN echo 1024 > /proc/sys/net/core/somaxconn
+RUN echo never > /sys/kernel/mm/transparent_hugepage/enabled
 
 EXPOSE 6379/tcp
 
@@ -63,9 +65,7 @@ ENV ROOT_HOME /root
 ENV SPEEDUS_DIR /opt/torusware/speedus
 ENV NETPIPE_DIR $SPEEDUS_DIR/benchmarks/NetPIPE-C
 
-RUN apt-get update \
- && apt-get -qqy install wget unzip make gcc \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get -qqy install wget unzip make gcc
 
 RUN mkdir -p /opt/torusware \
  && cd /opt/torusware \

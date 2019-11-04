@@ -50,24 +50,18 @@ mkdir -p /home/${RUN_USER}/${RUN_USER}/data
 
 chmod -R 700 "/home/${RUN_USER}/"
 chown -R "${RUN_USER}:${RUN_GROUP}" "/home/${RUN_USER}/"
-chown -R "${RUN_USER}:${RUN_GROUP}" "/src/"
+# chown -R "${RUN_USER}:${RUN_GROUP}" "/src/"
 
 env | grep LD_LIBRARY_PATH >> /home/${RUN_USER}/.bashrc
 
 /usr/bin/ssh-keygen -A
 mkdir -p /run/sshd
-/usr/sbin/sshd -D
 
+echo "starting sshd"
+/usr/sbin/sshd -D &
+
+echo "starting ssh service"
 service ssh start
 
-# first arg is `-f` or `--some-option`
-# or first arg is `something.conf`
-if [ "${1#-}" != "$1" ] || [ "${1%.conf}" != "$1" ]; then
-	set -- redis-server "$@"
-fi
-
-# allow the container to be started with `--user`
-if [ "$1" = 'redis-server' -a "$(id -u)" = '0' ]; then
-	find . \! -user redis -exec chown redis '{}' +
-	exec speedus gosu redis "$0" "$@"
-fi
+echo "starting redis service"
+exec speedus redis-server /etc/redis/redis.conf

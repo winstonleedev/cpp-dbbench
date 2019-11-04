@@ -43,7 +43,7 @@ struct options handle_arguments(int ac, const char **av) {
     desc.add_options()
             ("help", "produce help message")
             ("db", po::value<int>(), "(required) select database: 0 - level db, 1 - rocks db, 2 - redis, 3 - LM DB")
-            ("integrity", po::value<int>(), "perform integrity test for all databases")
+            ("integrity", "perform integrity test for all databases")
             ("read", po::value<int>(), "ratio of read ops per 100 ops e.g 20, the rest will be write ops")
             ("duration", po::value<int>(), "how long should the test be run in seconds. default to 60");
 
