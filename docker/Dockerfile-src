@@ -52,12 +52,11 @@ ENV REDIS_VERSION=4.0.9 \
     REDIS_DATA_DIR=/var/lib/redis \
     REDIS_LOG_DIR=/var/log/redis
 
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server=5:${REDIS_VERSION}* \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils redis-server=5:${REDIS_VERSION}* \
  && rm /etc/redis/redis.conf
 
-RUN echo 1024 > /proc/sys/net/core/somaxconn
-RUN echo never > /sys/kernel/mm/transparent_hugepage/enabled
+# RUN echo 1024 > /proc/sys/net/core/somaxconn
+# RUN echo never > /sys/kernel/mm/transparent_hugepage/enabled
 
 EXPOSE 6379/tcp
 
@@ -80,3 +79,17 @@ RUN cd $NETPIPE_DIR \
  && cp NPtcp /usr/bin/NPtcp
 
 COPY speedus /usr/local/bin/speedus
+
+RUN apt-get -y install libhiredis-dev
+
+WORKDIR /src
+RUN git clone https://github.com/sewenew/redis-plus-plus.git \
+    && cd redis-plus-plus \
+    && mkdir compile \
+    && cd compile \
+    && cmake -DCMAKE_BUILD_TYPE=Release .. \
+    && make \
+    && make install
+
+
+

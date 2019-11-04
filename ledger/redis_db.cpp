@@ -9,23 +9,17 @@ RedisDB::~RedisDB() {
 }
 
 bool RedisDB::open(const std::string& dbname) {
-    c = redisConnectUnixWithTimeout("/tmp/redis.sock", timeout);
-    if (c == NULL || c->err) {
-        if (c) {
-            printf("Connection error: %s\n", c->errstr);
-            redisFree(c);
-        } else {
-            printf("Connection error: can't allocate redis context\n");
-        }
-        return false;
-    }
+    ConnectionOptions options;
+    options.type = ConnectionType::UNIX;
+    options.path = "/tmp/redis.sock";
+    redis = new Redis(options);
     isOpen = true;
     return true;
 }
 
 void RedisDB::close() {
+    delete redis;
     isOpen = false;
-    redisFree(c);
 }
 
 bool RedisDB::opened() {
@@ -33,50 +27,36 @@ bool RedisDB::opened() {
 }
 
 bool RedisDB::get(const std::string& key, std::string* value) {
-    redisReply *reply = (redisReply *)redisCommand(c,"GET %s", key);
-    bool result = true;
-    if (reply->str == nullptr) {
-        result = false;
-    } else {
-        *value = reply->str;
+    auto result = redis->get(key);
+    if (result) {
+        *value = *result;
+        return true;
     }
-    freeReplyObject(reply);
-    return result;
+    return false;
 }
 
 bool RedisDB::put(const std::string& key, const std::string& value) {
-    redisReply *reply = (redisReply *)redisCommand(c,"SET %s %s", key, value);
-    bool result = isBatch || (strcmp(reply->str, "OK") == 0);
-    freeReplyObject(reply);
-    return result;
+    return redis->set(key, value);
 }
 
 bool RedisDB::putBatch(const std::string& key, const std::string& value) {
-    redisReply *reply = (redisReply *)redisCommand(c,"MULTI");
-    isBatch = true;
-    freeReplyObject(reply);
     return put(key, value);
 }
 
 bool RedisDB::del(const std::string& key) {
-    redisReply *reply = (redisReply *)redisCommand(c,"DEL %s", key);
-    bool result = isBatch || (reply->integer == 1);
-    freeReplyObject(reply);
-    return result;
+    return redis->del(key);
 }
 
 bool RedisDB::delBatch(const std::string& key) {
-    redisReply *reply = (redisReply *)redisCommand(c,"MULTI");
-    isBatch = true;
-    freeReplyObject(reply);
     return del(key);
 }
 
 bool RedisDB::applyBatch() {
-    redisReply *reply = (redisReply *)redisCommand(c,"EXEC");
-    freeReplyObject(reply);
-    isBatch = false;
     return true;
+}
+
+void RedisDB::clear() {
+    redis->command("FLUSHALL");
 }
 
 }

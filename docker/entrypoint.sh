@@ -63,5 +63,6 @@ echo "starting sshd"
 echo "starting ssh service"
 service ssh start
 
+mkdir -p /home/medium/medium/data/states-2
 echo "starting redis service"
 exec speedus redis-server /etc/redis/redis.conf

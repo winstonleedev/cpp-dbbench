@@ -1,10 +1,13 @@
 #pragma once
 
+#include <string>
 #include <cstring>
 
-#include <hiredis/hiredis.h>
+#include <sw/redis++/redis++.h>
 
 #include <ledger/state_db.h>
+
+using namespace sw::redis;
 
 namespace avis {
 
@@ -24,15 +27,14 @@ public:
     bool del(const std::string& key) override;
     bool delBatch(const std::string& key) override;
     bool applyBatch() override;
+    void clear() override;
 
 private:
     RedisDB() = default;
 
     bool isOpen = false;
     bool isBatch = false;
-    redisContext *c;
-
-    struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+    Redis* redis = nullptr;
 };
 }
 
