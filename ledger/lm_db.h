@@ -6,7 +6,7 @@
 
 #include <boost/asio.hpp>
 
-#include <lmdb/libraries/liblmdb/lmdb.h>
+#include <lmdb/lmdb.h>
 
 #include <ledger/state_db.h>
 

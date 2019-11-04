@@ -38,8 +38,8 @@ file(GLOB ALLSRC
     "util/*.cpp"
     "wiredis/include/wiredis/*.h"
     "wiredis/include/wiredis/proto/*.h"
-    "lmdb/libraries/liblmdb/*.h"
-    "lmdb/libraries/liblmdb/*.c"
+    "lmdb/*.h"
+    "lmdb/*.c"
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${ALLSRC})
