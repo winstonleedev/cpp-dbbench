@@ -1,4 +1,4 @@
-FROM thanhphu/dbbench-srchttps://kudaha.atlassian.net/wiki/spaces/BlockchainResearch/pages/318537868/Lab+StateDB
+FROM thanhphu/dbbench-src
 
 USER ${RUN_USER}
 COPY entrypoint.sh /
