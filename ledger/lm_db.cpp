@@ -23,9 +23,12 @@ bool LMDB::open(const std::string& dbname) {
 }
 
 void LMDB::close() {
-    mdb_dbi_close(env, dbi);
-    mdb_txn_commit(txn);
-    mdb_env_close(env);
+    if (isOpen) {
+        isOpen = false;
+        mdb_dbi_close(env, dbi);
+        mdb_txn_commit(txn);
+        mdb_env_close(env);
+    }
 }
 
 bool LMDB::opened() {

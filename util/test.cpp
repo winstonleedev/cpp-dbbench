@@ -122,16 +122,12 @@ void full_test(options opts) {
     // Counter end, print results
     auto elapsed = std::chrono::system_clock::now() - start;
     auto elapsedSec = elapsed.count() / 1000000000.0;
+    db->applyBatch();
     auto size = treeSize(dbPath);
     std::cout << "Test completed in " << elapsedSec << " s" << std::endl;
-    std::cout << "Read  Ops: " << readCount << " (" << (readCount / elapsedSec) << " ops / sec)" << std::endl;
-    std::cout << "Write Ops: " << writeCount << " (" << (writeCount / elapsedSec) << " ops / sec)" << std::endl;
-    auto totalCount = readCount + writeCount;
-    std::cout << "Total Ops: " << totalCount << " (" << (totalCount / elapsedSec) << " ops / sec)" << std::endl;
+    std::cout << "Read  Ops: " << readCount << std::endl;
+    std::cout << "Write Ops: " << writeCount << std::endl;
     std::cout << "Data size: " << size << std::endl;
-
-    std::cout << opts.dbType << "," << elapsedSec << ","<< readCount << "," << std::endl;
-    std::cout << opts.dbType << "," << elapsedSec << ","<< writeCount << "," << std::endl;
 
     // Clean up
     db->clear();
