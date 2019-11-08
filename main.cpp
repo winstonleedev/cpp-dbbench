@@ -18,7 +18,10 @@ struct options handle_arguments(int ac, const char **av) {
             ("db", po::value<int>(), "(required) select database: 0 - level db, 1 - rocks db, 2 - redis, 3 - LM DB")
             ("integrity", "perform integrity test for all databases")
             ("read", po::value<int>(), "ratio of read ops per 100 ops e.g 20, the rest will be write ops")
-            ("duration", po::value<int>(), "how long should the test be run in seconds. default to 60");
+            ("duration", po::value<int>(), "how long should the test be run in seconds. default to 60")
+            ("threads", po::value<int>(), "number of threads to use, default to number of cores on the system")
+            ("len", po::value<int>(), "value length")
+            ("keys", po::value<int>(), "number of keys");
 
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
@@ -43,7 +46,7 @@ struct options handle_arguments(int ac, const char **av) {
     if (vm.count("read")) {
         result.readWeight = vm["read"].as<int>();
     } else {
-        result.readWeight = 20;
+        result.readWeight = 60;
     }
     result.writeWeight = 100 - result.readWeight;
 
@@ -53,7 +56,24 @@ struct options handle_arguments(int ac, const char **av) {
         result.duration = 60;
     }
 
-    result.stringLength = 5000;
+    if (vm.count("threads")) {
+        result.threads = vm["threads"].as<int>();
+    } else {
+        unsigned int numCores = std::thread::hardware_concurrency();
+        result.threads = numCores == 0 ? 1 : numCores;
+    }
+
+    if (vm.count("len")) {
+        result.stringLength = vm["len"].as<int>();
+    } else {
+        result.stringLength = 5000;
+    }
+
+    if (vm.count("keys")) {
+        result.stringLength = vm["keys"].as<int>();
+    } else {
+        result.stringLength = 10000;
+    }
 
     return result;
 }

@@ -3,6 +3,7 @@
 //
 
 #include <util/test.h>
+#include "Worker.h"
 
 using namespace avis;
 
@@ -88,40 +89,55 @@ void full_test(options opts) {
         exit(1);
     }
 
-    std::string long_string(opts.stringLength - 3,  'x');
-
     while (!db->opened()) {
         std::this_thread::sleep_for(1s);
     }
 
     // Create some fixed value for reading
-    for (int i = 0; i < 10000; i++) {
-        db->put(std::to_string(i), long_string + std::to_string(randBig()));
+    std::string long_string(opts.stringLength - 3,  'x');
+    for (int i = 0; i < opts.keys; i++) {
+        db->put(std::to_string(i), long_string + std::to_string(i));
     }
 
     // Counter start
+    std::cout << "Preparing threads=" << opts.threads << std::endl;
+    std::vector<Worker> workers;
+    std::thread threads[opts.threads];
+    auto randomEngine = new RandomEngine(opts.keys, opts.stringLength);
+    for (unsigned int i = 0; i < opts.threads; i++) {
+        auto worker = Worker(opts, db, randomEngine);
+        workers.push_back(worker);
+        threads[i] = std::thread(&Worker::run, worker);
+    }
+
     std::this_thread::sleep_for(1s);
     std::cout << "Initialization done. Test starting" << std::endl << std::flush;
     auto start = std::chrono::system_clock::now();
     auto end = start + std::chrono::seconds(opts.duration);
 
-    long readCount = 0, writeCount = 0;
-    auto* readResult = new std::string;
+    // Loop
     while (std::chrono::system_clock::now() < end) {
-        int index = rand10000();
-        if (index < opts.readWeight) {
-            readCount++;
-            // Do read
-            db->get(std::to_string(index), readResult);
-        } else {
-            writeCount++;
-            // Do write
-            db->put(std::to_string(index), long_string + std::to_string(randBig()));
-        }
+        std::this_thread::sleep_for(1s);
     }
-    // Counter end, print results
+
+    // Wind down
+    for (auto worker: workers) {
+        worker.stop();
+    }
+    for (unsigned int i = 0; i < opts.threads; i++) {
+        threads[i].join();
+    }
+
     auto elapsed = std::chrono::system_clock::now() - start;
     auto elapsedSec = elapsed.count() / 1000000000.0;
+
+    unsigned long readCount = 0, writeCount = 0;
+    for (auto worker: workers) {
+        readCount += worker.getReadCount();
+        writeCount += worker.getWriteCount();
+    }
+
+    // Counter end, print results
     db->applyBatch();
     auto size = treeSize(dbPath);
     std::cout << "Test completed in " << elapsedSec << " s" << std::endl;
@@ -132,6 +148,7 @@ void full_test(options opts) {
     // Clean up
     db->clear();
     delete db;
+    delete randomEngine;
 }
 
 void condition_test(bool expr, const std::string& message) {

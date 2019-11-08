@@ -14,18 +14,6 @@
 
 #include "ledger/db_provider.h"
 
-#define _ENV(x, y)          (std::getenv(x) ? std::getenv(x) : y)
-#define PATH_STATE_DB        _ENV("PATH_STATE_DB", "/home/medium/medium/data/states-")
-
-// Data structures
-
-struct options {
-    int dbType;
-    int readWeight;
-    int writeWeight;
-    int duration;
-    int stringLength;
-};
 
 // Function declaration
 
