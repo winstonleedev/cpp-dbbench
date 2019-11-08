@@ -6,13 +6,13 @@
 
 RandomEngine::RandomEngine(int keyLength, int valueLength) {
     uniform_dist_key = std::uniform_int_distribution<int>(0, keyLength);
-    uniform_dist_value = std::uniform_int_distribution<int>(0, valueLength);
+    uniform_dist_100 = std::uniform_int_distribution<int>(0, 100);
 }
 
 int RandomEngine::randKeys() {
     return (uniform_dist_key(r));
 }
 
-int RandomEngine::randValues() {
-    return (uniform_dist_value(r));
+int RandomEngine::rand100() {
+    return (uniform_dist_100(r));
 }

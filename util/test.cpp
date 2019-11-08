@@ -101,11 +101,11 @@ void full_test(options opts) {
 
     // Counter start
     std::cout << "Preparing threads=" << opts.threads << std::endl;
-    std::vector<Worker> workers;
+    std::vector<Worker*> workers {};
     std::thread threads[opts.threads];
     auto randomEngine = new RandomEngine(opts.keys, opts.stringLength);
     for (unsigned int i = 0; i < opts.threads; i++) {
-        auto worker = Worker(opts, db, randomEngine);
+        auto worker = new Worker(opts, db, randomEngine, i);
         workers.push_back(worker);
         threads[i] = std::thread(&Worker::run, worker);
     }
@@ -121,8 +121,8 @@ void full_test(options opts) {
     }
 
     // Wind down
-    for (auto worker: workers) {
-        worker.stop();
+    for (auto &worker: workers) {
+        worker->stop();
     }
     for (unsigned int i = 0; i < opts.threads; i++) {
         threads[i].join();
@@ -132,9 +132,10 @@ void full_test(options opts) {
     auto elapsedSec = elapsed.count() / 1000000000.0;
 
     unsigned long readCount = 0, writeCount = 0;
-    for (auto worker: workers) {
-        readCount += worker.getReadCount();
-        writeCount += worker.getWriteCount();
+    for (auto &worker: workers) {
+        readCount += worker->getReadCount();
+        writeCount += worker->getWriteCount();
+        delete worker;
     }
 
     // Counter end, print results

@@ -60,7 +60,7 @@ struct options handle_arguments(int ac, const char **av) {
         result.threads = vm["threads"].as<int>();
     } else {
         unsigned int numCores = std::thread::hardware_concurrency();
-        result.threads = numCores == 0 ? 1 : numCores;
+        result.threads = numCores == 0 ? 1 : numCores - 1;
     }
 
     if (vm.count("len")) {

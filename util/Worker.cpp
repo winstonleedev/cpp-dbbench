@@ -5,10 +5,10 @@
 #include "Worker.h"
 
 void Worker::run() {
-    while (!shouldStop) {
+    while (!shouldStop.load()) {
         int index = r->randKeys();
         auto expectedValue = long_string + std::to_string(index);
-        if (index < opts.readWeight) {
+        if (r->rand100() < opts.readWeight) {
             readCount++;
             // Do read
             db->get(std::to_string(index), readResult);
@@ -24,12 +24,15 @@ void Worker::run() {
     }
 }
 
-Worker::Worker(struct options &_opts, avis::StateDB *_db, RandomEngine* _r) {
+Worker::Worker(struct options &_opts, avis::StateDB *_db, RandomEngine* _r, int _id) {
+    shouldStop.store(false);
     opts = _opts;
     db = _db;
     r = _r;
+    id = _id;
     readCount = 0;
     writeCount = 0;
+    readResult = new std::string;
     long_string = std::string(opts.stringLength,  'x');
 }
 
@@ -42,5 +45,9 @@ unsigned long Worker::getWriteCount() {
 }
 
 void Worker::stop() {
-    shouldStop = true;
+    shouldStop.store(true);
+}
+
+Worker::~Worker() {
+    // delete readResult;
 }

@@ -7,6 +7,7 @@
 #define DBBENCH_WORKER_H
 
 #include <iostream>
+#include <atomic>
 
 #include <util/util.h>
 #include <ledger/state_db.h>
@@ -14,7 +15,8 @@
 
 class Worker {
 public:
-    Worker(struct options& _opts, avis::StateDB* _db, RandomEngine* _r);
+    Worker(struct options& _opts, avis::StateDB* _db, RandomEngine* _r, int _id);
+    ~Worker();
     void run();
     unsigned long getReadCount();
     unsigned long getWriteCount();
@@ -25,13 +27,14 @@ private:
     struct options opts{};
     avis::StateDB* db;
     RandomEngine* r;
+    int id;
 
     // Output
     unsigned long readCount, writeCount;
 
     // Control
-    bool shouldStop = false;
-    std::string* readResult = new std::string;
+    std::atomic<bool> shouldStop = {};
+    std::string* readResult;
     std::string long_string;
 };
 

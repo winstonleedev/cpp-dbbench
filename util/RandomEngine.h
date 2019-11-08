@@ -12,12 +12,12 @@ private:
     // Seed with a real random value, if available
     std::random_device r{};
     std::uniform_int_distribution<int> uniform_dist_key;
-    std::uniform_int_distribution<int> uniform_dist_value;
+    std::uniform_int_distribution<int> uniform_dist_100;
 
 public:
     RandomEngine(int keyLength, int valueLength);
     int randKeys();
-    int randValues();
+    int rand100();
 };
 
 
