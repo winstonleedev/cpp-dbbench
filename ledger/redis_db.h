@@ -35,6 +35,8 @@ private:
     bool isOpen = false;
     bool isBatch = false;
     Redis* redis = nullptr;
+
+    std::mutex mtx{};
 };
 }
 

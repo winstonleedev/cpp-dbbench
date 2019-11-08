@@ -75,7 +75,11 @@ bool LMDB::del(const std::string& key) {
     _key.mv_size = sizeof(char) * key.size();
     _key.mv_data = (void *)key.c_str();
 
-    return mdb_del(txn, dbi, &_key, nullptr) != MDB_NOTFOUND;
+    mtx.lock();
+    bool result = mdb_del(txn, dbi, &_key, nullptr) != MDB_NOTFOUND;
+    mtx.unlock();
+
+    return result;
 }
 
 bool LMDB::delBatch(const std::string& key) {

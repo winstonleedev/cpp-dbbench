@@ -36,7 +36,11 @@ bool RedisDB::get(const std::string& key, std::string* value) {
 }
 
 bool RedisDB::put(const std::string& key, const std::string& value) {
-    return redis->set(key, value);
+    mtx.lock();
+    bool result = redis->set(key, value);
+    mtx.unlock();
+
+    return result;
 }
 
 bool RedisDB::putBatch(const std::string& key, const std::string& value) {
@@ -44,7 +48,11 @@ bool RedisDB::putBatch(const std::string& key, const std::string& value) {
 }
 
 bool RedisDB::del(const std::string& key) {
-    return redis->del(key);
+    mtx.lock();
+    bool result = redis->del(key);
+    mtx.unlock();
+
+    return result;
 }
 
 bool RedisDB::delBatch(const std::string& key) {
