@@ -54,7 +54,11 @@ bool LMDB::put(const std::string& key, const std::string& value) {
     _data.mv_size = sizeof(char) * value.size();
     _data.mv_data = (void *)value.c_str();
 
-    return mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA) == MDB_OK;
+    mtx.lock();
+    bool result = mdb_put(txn, dbi, &_key, &_data, MDB_NODUPDATA) == MDB_OK;
+    mtx.unlock();
+
+    return result;
 }
 
 bool LMDB::putBatch(const std::string& key, const std::string& value) {

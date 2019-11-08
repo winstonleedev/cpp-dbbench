@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <mutex>
 
 #include <boost/asio.hpp>
 
@@ -43,6 +44,7 @@ private:
 
     bool isOpen = false;
     bool isBatch = false;
+    std::mutex mtx{};
 };
 }
 

@@ -94,7 +94,7 @@ void full_test(options opts) {
     }
 
     // Create some fixed value for reading
-    std::string long_string(opts.stringLength - 3,  'x');
+    std::string long_string(opts.stringLength,  'x');
     for (int i = 0; i < opts.keys; i++) {
         db->put(std::to_string(i), long_string + std::to_string(i));
     }
