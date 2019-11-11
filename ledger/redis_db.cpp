@@ -27,7 +27,9 @@ bool RedisDB::opened() {
 }
 
 bool RedisDB::get(const std::string& key, std::string* value) {
+    mtx.lock();
     auto result = redis->get(key);
+    mtx.unlock();
     if (result) {
         *value = *result;
         return true;
@@ -64,7 +66,9 @@ bool RedisDB::applyBatch() {
 }
 
 void RedisDB::clear() {
+    mtx.lock();
     redis->flushall(true);
+    mtx.unlock();
 }
 
 }
